@@ -43,7 +43,7 @@ Nella tabella relativa alla strong scalability vengono mostrati anche lo speedup
 |100000|15|139.766334|14.66|0.97|
 |100000|16|131.444039|15.59|0.97|
 
-Il tempo impiegato dipende anche dalla latenza dovuta alla connessione, infatti, rieseguendo più volte l'algoritmo sullo stesso numero di VCPU, si ha una variazione in positivo o in negativo del tempo impiegato, che avvicinerà o allontanerà lo speedup al numero di VCPU utilizzate (nel caso ottimo lo speedup è proprio uguale al numero di VCPU utlizzate).
+Dai benchmark il programma risulta avere un ottimo speedup. Il fatto che lo speedup diminuisca sensibilmente man mano che aumentano le VCPUs è dovuto alla latenza della connessione. Infatti, rieseguendo più volte l'algoritmo sullo stesso numero di VCPU, si ha una piccola variazione in positivo o in negativo del tempo impiegato, la quale avvicinerà o allontanerà lo speedup al numero di VCPU utilizzate (nel caso ottimo lo speedup è proprio uguale al numero di VCPU utlizzate).
 
 - **Weak Scalability:** per dimostrare come le performance del programma diminuiscono quando il numero di processi aumenta ma la taglia del problema per ogni processo rimane fissata, è stato utilizzato un file di input di 10000*NUM_VCPU bodies (1 VCPU 10000 bodies, 2 VCPUs 20000 bodies, ecc). I risultati sono stati i seguenti:
 ![Weak Scalability chart](images/WeakScalability.png)
@@ -66,3 +66,5 @@ Il tempo impiegato dipende anche dalla latenza dovuta alla connessione, infatti,
 |140000|14|294.677063|
 |150000|15|315.917237|
 |160000|16|337.136267|
+
+In questi benchmark il programma non dimostra una scalabilità pessima. Infatti, anche se all'aumentare del numero di VCPUs aumenta il tempo impiegato a causa dell'overhead (causato dall'invio dei dati agli altri nodi e dalla ricezione dei dati aggiornati), questo aumenta solo del doppio rispetto alla metà dei core utilizzati.
