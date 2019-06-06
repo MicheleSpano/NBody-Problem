@@ -24,7 +24,7 @@ Nella tabella relativa alla strong scalability vengono mostrati anche lo speedup
 
 ![Strong Scalabilty chart](images/StrongScalability.png)
 
-|Input|# VCPUs|Tempo|Speedup|Efficienza|
+|Input|# VCPUs|Tempo (s)|Speedup|Efficienza|
 |---|---|---|---|---|
 |100000|1|2049.910889|1|1|
 |100000|2|1026.074656|1.99|0.99|
@@ -48,7 +48,7 @@ Il tempo impiegato dipende anche dalla latenza dovuta alla connessione, infatti,
 - **Weak Scalability:** per dimostrare come le performance del programma diminuiscono quando il numero di processi aumenta ma la taglia del problema per ogni processo rimane fissata, è stato utilizzato un file di input di 10000*NUM_VCPU bodies (1 VCPU 10000 bodies, 2 VCPUs 20000 bodies, ecc). I risultati sono stati i seguenti:
 ![Weak Scalability chart](images/WeakScalability.png)
 
-|Input|# VCPUs|Tempo|
+|Input|# VCPUs|Tempo (s)|
 |---|---|---|
 |10000|1|20.469170|
 |20000|2|41.016116|
