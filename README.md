@@ -1,30 +1,30 @@
 # Problema n-body
 Il progetto contiene la soluzione al problema nbody. Sono presentate sia la soluzione sequenziale che quella parallela, ottenuta attraverso l'uso di Open MPI.
-Nella soluzione parallela sono state utilizzate le funzioni MPI `MPI_Type_create_struct` per ottenere un nuovo datatype associato alla struttura che costituisce un body, `MPI_Scatterv` per mandare ad ogni processo un numero potenzialmente diverso di bodies, `MPI_Allgatherv` per aggiornare ogni processo con i nuovi dati computati dagli altri processi.
+Nella soluzione parallela sono state utilizzate le funzioni `MPI_Type_create_struct` per ottenere un nuovo datatype associato alla struttura che costituisce un body, `MPI_Scatterv` per mandare ad ogni processo un numero potenzialmente diverso di bodies e `MPI_Allgatherv` per aggiornare ogni processo con i nuovi dati computati dagli altri processi.
 
 ***
 
-### Compilazione
+### Compilazione e run
 Sono inclusi tre file sorgenti:
-- bodiesGenerator.c: permette di generare un file che poi andrà in input al programma principale. Per compilarlo è sufficiente `gcc bodiesGenerator.c -o generator`. Il programma dovrà ricevere come argomento il numero di bodies da generare. Questo programma deve essere eseguito per primo per fornire il file di input per il programma principale;
-- sequentialNBody.c: è il programma sequenziale. Va compilato con `gcc sequentialNBody.c -o sequential -lm`. Il programma dovrà ricevere come argomento il numero di iterazioni da effettuare;
-- parallelNBody.c: è il programma parallelo. Va compilato con `mpicc parallelNBody.c -o parallel -lm`. Il programma dovrà ricevere come argomento il numero di iterazioni da effettuare.
+- bodiesGenerator.c: permette di generare un file .txt che costituirà l'input per il programma principale. Per compilarlo è sufficiente `gcc bodiesGenerator.c -o generator`. Il programma dovrà ricevere come argomento il numero di bodies da generare (es. `./generator 10000`). Questo programma deve essere chiaramente eseguito per primo;
+- sequentialNBody.c: è il programma sequenziale. Va compilato con `gcc sequentialNBody.c -o sequential -lm`. Il programma dovrà ricevere come argomento il numero di iterazioni da effettuare (es. `./sequential 10`);
+- parallelNBody.c: è il programma parallelo. Va compilato con `mpicc parallelNBody.c -o parallel -lm`. Il programma dovrà ricevere come argomento il numero di iterazioni da effettuare (es. `mpirun -n 4 --hostfile hfile ./parallel 10`).
 
-Sia il programma sequenziale che quello parallelo daranno in output un file .txt contenente i dati aggiornati dei bodies. Per verificare la correttezza del programma parallelo è sufficiente confrontare i due file di output, i quali dovranno contentere gli stessi valori se eseguito sullo stesso file di input.
+Sia il programma sequenziale che quello parallelo daranno in output un file .txt contenente i dati aggiornati dei bodies. Per verificare la correttezza del programma parallelo è sufficiente confrontare i due file di output, i quali dovranno contentere gli stessi valori se eseguiti sullo stesso file di input e con lo stesso numero di iterazioni.
 
 ***
 
 ### Benchmark
-I risultati presentati sono stati ottenuti eseguendo il programma su un cluster di 8 istanze AWS. Le istanze utilizzate sono di tipo t2.large (2 VCPU da 8 GB di memoria). I tempi riportati sono stati ottenuti passando "10" come argmento al programma sequenziale/parallelo (cioè facendo iterare 10 volte la simulazione dello spostamento dei bodies).
+I risultati presentati sono stati ottenuti eseguendo il programma su un cluster di 8 istanze AWS. Le istanze utilizzate sono di tipo t2.large (2 VCPU da 8 GB di memoria). I tempi riportati sono stati ottenuti passando "10" come argmento ai programmi sequenziale e parallelo (cioè facendo iterare 10 volte la simulazione dello spostamento dei bodies).
 
-I risultati sono presentati in termini di strong scalability e weak scalability. In entrambi i casi è stato eseguito prima il programma sequenziale, per poi aumentare uno alla volta il numero delle VCPU utilizzate, fino ad arrivare a 16.
-Nella tabella relativa alla strong scalability vengono mostrati anche lo speedup ottenuto (in accordo con la formula S(p,n)=T(1,n)/T(p,n)) e l'efficienza (in accordo con la formula E(p,n)=S(p,n)/p). Questi due valori non vengono mostrati nella tabella relativa alla weak scalability in quanto per calcolarli c'è bisogno che la taglia dell'input (n) tra il programma sequenziale e quello parallelo sia la stessa.
+I risultati sono presentati in termini di strong scalability e weak scalability. In entrambi i casi è stato eseguito prima il programma sequenziale, per poi aumentare di uno alla volta il numero di VCPU utilizzate, fino ad arrivare a 16.
+Nella tabella relativa alla strong scalability vengono mostrati anche lo speedup ottenuto (S(p,n)=T(1,n)/T(p,n)) e l'efficienza (E(p,n)=S(p,n)/p). Questi due valori non vengono mostrati nella tabella relativa alla weak scalability in quanto per calcolarli è necessario che la taglia dell'input (n) rimanga la stessa all'aumentare dei processi utilizzati.
 
-- **Strong Scalability:** per dimostrare che le performance del programma migliorano all'aumentare del numero di core se si mantiene lo stesso input, è stato utilizzato un file contenente 100000 bodies (`./generator 100000`). I risultati sono stati i seguenti:
+- **Strong Scalability:** per dimostrare che le performance del programma migliorano all'aumentare del numero di processi se si mantiene lo stesso input, è stato utilizzato un file contenente 100000 bodies (`./generator 100000`). I risultati sono stati i seguenti:
 
 ![Strong Scalabilty chart](images/StrongScalability.png)
 
-|Input|# VCPUs|Tempo (s)|Speedup|Efficienza|
+|Input (# bodies)|# VCPUs|Tempo (s)|Speedup|Efficienza|
 |---|---|---|---|---|
 |100000|1|2049.910889|1|1|
 |100000|2|1026.074656|1.99|0.99|
@@ -43,9 +43,10 @@ Nella tabella relativa alla strong scalability vengono mostrati anche lo speedup
 |100000|15|139.766334|14.66|0.97|
 |100000|16|131.444039|15.59|0.97|
 
-Dai benchmark il programma risulta avere un ottimo speedup. Il fatto che lo speedup diminuisca sensibilmente man mano che aumentano le VCPUs è dovuto alla latenza della connessione. Infatti, rieseguendo più volte l'algoritmo sullo stesso numero di VCPU, si ha una piccola variazione in positivo o in negativo del tempo impiegato, la quale avvicinerà o allontanerà lo speedup al numero di VCPU utilizzate (nel caso ottimo lo speedup è proprio uguale al numero di VCPU utlizzate).
+Dai benchmark il programma risulta avere un'ottima scalabilità. Infatti, al raddoppiare dei processori si impiega circa la metà del tempo.
+Il fatto che lo speedup diminuisca sensibilmente (rispetto allo speedup ideale) man mano che aumentano le VCPUs è dovuto alla latenza della connessione. Infatti, rieseguendo più volte l'algoritmo sullo stesso numero di VCPU, si ha una piccola variazione in positivo o in negativo del tempo impiegato causato da tale latenza, la quale avvicinerà o allontanerà lo speedup al numero di VCPU utilizzate (nel caso ottimo lo speedup è proprio uguale al numero di VCPU utlizzate).
 
-- **Weak Scalability:** per dimostrare come le performance del programma diminuiscono quando il numero di processi aumenta ma la taglia del problema per ogni processo rimane fissata, è stato utilizzato un file di input di 10000*NUM_VCPU bodies (1 VCPU 10000 bodies, 2 VCPUs 20000 bodies, ecc). I risultati sono stati i seguenti:
+- **Weak Scalability:** per dimostrare come le performance del programma diminuiscono quando il numero di processi aumenta ma la taglia del problema per ogni processo rimane fissata, è stato utilizzato un file di input di 10000*NUM_VCPU bodies (es. 1 VCPU 10000 bodies, 2 VCPUs 20000 bodies, ecc). I risultati sono stati i seguenti:
 ![Weak Scalability chart](images/WeakScalability.png)
 
 |Input|# VCPUs|Tempo (s)|
@@ -67,4 +68,4 @@ Dai benchmark il programma risulta avere un ottimo speedup. Il fatto che lo spee
 |150000|15|315.917237|
 |160000|16|337.136267|
 
-In questi benchmark il programma non dimostra una scalabilità pessima. Infatti, anche se all'aumentare del numero di VCPUs aumenta il tempo impiegato a causa dell'overhead (causato dall'invio dei dati agli altri nodi e dalla ricezione dei dati aggiornati), questo aumenta solo del doppio rispetto alla metà dei core utilizzati.
+In questo caso, raddoppiando il numero di processi utilizzati (e quindi la taglia dell'input) raddoppia anche il tempo impiegato. Questo è dovuto all'overhead necessario per spedire e ricevere i messaggi da tutti gli altri nodi.
